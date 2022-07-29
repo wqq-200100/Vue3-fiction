@@ -1,5 +1,4 @@
 <template>
-  <Nav/>
   <div class="banner">
     <div class="wrap">
       <div class="swiper">
@@ -27,7 +26,7 @@
 <script setup>
 import {reactive} from "vue";
 import {useRouter} from "vue-router";
-import {RecommendNovel} from "../network/request.js";
+import {RecommendNovel} from "../api/request.js";
 import Nav from '../components/Nav.vue'
 
 const data = reactive([])

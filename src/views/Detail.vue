@@ -1,5 +1,4 @@
 <template>
-  <Nav/>
   <div class="main">
     <div class="page-header">
       <div class="breadCrumb">
@@ -83,7 +82,7 @@
 import {onMounted, reactive, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
 
-import {GetCapterName, NovelDetails} from "../network/request.js";
+import {GetCapterName, NovelDetails} from "../api/request.js";
 
 const router = useRouter()
 const route = useRoute()

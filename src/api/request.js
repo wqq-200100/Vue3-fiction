@@ -5,7 +5,6 @@ export function request(config) {
         baseURL: 'http://127.0.0.1:8080',
         timeout: 10000
     })
-
     instance.interceptors.request.use(config => {
         return config
     }, error => console.log(error))

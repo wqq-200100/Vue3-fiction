@@ -21,9 +21,18 @@ const routes = [
         component:()=> import('../views/Login.vue'),
     }
 ]
-
-export default createRouter({
+const router = createRouter({
     routes,
     history:createWebHistory()
 })
+
+// 路由守卫
+router.beforeEach((to, from, next)=>{
+    if (to === 'home'){
+        window.localStorage.getItem('username') || router.push('/login')
+    }
+    next()
+})
+
+export default router
 

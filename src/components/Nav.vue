@@ -31,7 +31,11 @@
           <a href="#">作家专区</a>
           <a href="#">手机版</a>
         </div>
-        <p class="login">登录&nbsp&nbsp|&nbsp&nbsp注册</p>
+        <p v-if="username">
+          {{ username }}
+          <button @click="logout">退出登录</button>
+        </p>
+        <p v-else class="login" @click="goLogin">登录&nbsp&nbsp|&nbsp&nbsp注册</p>
       </div>
     </div>
   </div>
@@ -39,14 +43,37 @@
 
 <script setup>
 import {useRouter} from "vue-router";
-import {ref, watch} from 'vue'
-import {Search} from "../network/request.js";
+import {onMounted, ref, watch} from 'vue'
+import {Search} from "../api/request.js";
+import {getUserLoginData} from "../store";
+import {useRoute} from "vue-router";
 
 const options = ref([])
 const searchData = ref([])
+const username = ref('')
+let loginStore = getUserLoginData()
+const route = useRoute()
 
+//监听路由的变化，拿到变化后的路由参数
+watch(()=>route.path ,()=>{
+  const params = route.params.username
+  if (params) username.value = params
+})
+
+// 为了防止刷新丢失数据，将用户名保存到本地
+onMounted(() => {
+  const storageName = window.localStorage.getItem('username')
+  if (storageName) username.value = storageName
+})
+
+function logout() {
+  loginStore.$reset() // 重置state
+  window.localStorage.clear('username') // 清空localStorage
+  username.value = ''
+}
+
+// 监听搜索内容，如有内容则通过路由传参，跳转至详情
 watch(searchData, () => {
-  // 监听搜索内容，如有内容则通过路由传参，跳转至详情
   if (searchData.value.length > 0) {
     router.push({
       name: 'detail',
@@ -57,6 +84,7 @@ watch(searchData, () => {
   }
 })
 
+// 如果有参数，将搜索的结果赋值给option,否则为空数组
 const remoteMethod = async (query) => {
   if (query) {
     options.value = await Search(query)
@@ -66,11 +94,17 @@ const remoteMethod = async (query) => {
 }
 
 const router = useRouter()
+
 function goHome() {
   router.push({
     path: '/'
   })
 }
+
+function goLogin() {
+  router.push('/login')
+}
+
 
 </script>
 

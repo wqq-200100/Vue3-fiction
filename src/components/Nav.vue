@@ -6,11 +6,11 @@
           <img alt="" class="logo" src="../assets/img/logo.png">
         </a>
         <div class="tabs">
-          <a class="active" href="#">首页</a>
-          <a href="#">详情</a>
-          <a href="#">书架</a>
+          <a :class="route.path ==='/home' && 'active'" href="#" @click="router.push('/home')">首页</a>
+          <a :class="route.path ==='/collect' && 'active'" href="#" @click="router.push('/collect')">收藏</a>
         </div>
       </div>
+
       <div class="right">
         <div class="search">
           <el-select
@@ -27,15 +27,11 @@
                 :value="item.title"/>
           </el-select>
         </div>
-        <div class="other">
-          <a href="#">作家专区</a>
-          <a href="#">手机版</a>
-        </div>
         <p v-if="username">
           {{ username }}
           <button @click="logout">退出登录</button>
         </p>
-        <p v-else class="login" @click="goLogin">登录&nbsp&nbsp|&nbsp&nbsp注册</p>
+        <p v-else class="login" @click="goLogin">登录|注册</p>
       </div>
     </div>
   </div>
@@ -47,22 +43,32 @@ import {onMounted, ref, watch} from 'vue'
 import {Search} from "../api/request.js";
 import {getUserLoginData} from "../store";
 import {useRoute} from "vue-router";
+import {getLocal} from "../utils/tools";
 
 const options = ref([])
 const searchData = ref([])
 const username = ref('')
 let loginStore = getUserLoginData()
 const route = useRoute()
+const router = useRouter()
+
+function goHome() {
+  router.push({path: '/home'})
+}
+
+function goLogin() {
+  router.push('/login')
+}
 
 //监听路由的变化，拿到变化后的路由参数
-watch(()=>route.path ,()=>{
+watch(() => route.path, () => {
   const params = route.params.username
   if (params) username.value = params
 })
 
 // 为了防止刷新丢失数据，将用户名保存到本地
 onMounted(() => {
-  const storageName = window.localStorage.getItem('username')
+  const storageName = getLocal('usernameData').stateUsername
   if (storageName) username.value = storageName
 })
 
@@ -93,95 +99,228 @@ const remoteMethod = async (query) => {
   }
 }
 
-const router = useRouter()
-
-function goHome() {
-  router.push({
-    path: '/'
-  })
-}
-
-function goLogin() {
-  router.push('/login')
-}
-
 
 </script>
 
 <style lang="less" scoped>
-.nav {
-  width: 100vw;
-  background: rgba(245, 245, 247, .8);
+@media screen and (min-width: 601px) {
+  .nav {
+    width: 100vw;
+    background: rgba(245, 245, 247, .8);
 
-  .wrap {
-    width: 1200px;
-    height: 64px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    font-size: 16px;
-    line-height: 64px;
-
-    .left {
+    .wrap {
+      width: 1200px;
+      height: 64px;
+      margin: 0 auto;
       display: flex;
-
-      .logo {
-        width: 110px;
-        cursor: pointer; // 悬浮上空为首手
-        vertical-align: middle;
-      }
-
-      .tabs {
-        -webkit-box-align: center;
-        align-items: center;
-        margin-left: 68px;
-
-        a {
-          margin-right: 50px;
-        }
-
-        .active {
-          font-weight: bold;
-          color: dodgerblue;
-          border-bottom: 5px solid dodgerblue;
-          display: inline-block;
-          position: relative;
-          top: -4px;
-        }
-      }
-    }
-
-    .right {
-      display: flex;
-      align-items: center;
       justify-content: space-between;
-      -webkit-box-pack: justify;
+      font-size: 16px;
+      line-height: 64px;
 
-      .search {
-        padding-right: 30px;
+      .left {
+        display: flex;
 
-        input {
-          border-radius: 50px;
-          border: 1px solid #888888;
-          height: 25px;
-          width: 175px;
-          -webkit-appearance: none;
-          outline: none;
-          font: inherit;
+        .logo {
+          width: 110px;
+          cursor: pointer; // 悬浮上空为首手
+          vertical-align: middle;
+        }
+
+        .tabs {
+          -webkit-box-align: center;
+          align-items: center;
+          margin-left: 68px;
+
+          a {
+            margin-right: 50px;
+          }
+
+          .active {
+            font-weight: bold;
+            color: dodgerblue;
+            border-bottom: 5px solid dodgerblue;
+            display: inline-block;
+            position: relative;
+            top: -4px;
+          }
         }
       }
 
-      .other {
-        padding-right: 50px;
+      .right {
         display: flex;
         align-items: center;
-        -webkit-box-align: center;
+        justify-content: space-between;
+        -webkit-box-pack: justify;
 
-        a {
-          margin-left: 35px;
+        .search {
+          padding-right: 30px;
+
+          input {
+            border-radius: 50px;
+            border: 1px solid #888888;
+            height: 25px;
+            width: 175px;
+            -webkit-appearance: none;
+            outline: none;
+            font: inherit;
+          }
+        }
+
+        .other {
+          padding-right: 50px;
+          display: flex;
+          align-items: center;
+          -webkit-box-align: center;
+
+          a {
+            margin-left: 35px;
+          }
         }
       }
     }
   }
 }
+
+@media screen and (max-width: 600px) {
+  .nav {
+    width: 100vw;
+    background: rgba(245, 245, 247, .8);
+
+    .wrap {
+      height: 64px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      font-size: 16px;
+      line-height: 64px;
+
+      .left {
+        display: flex;
+        flex: 1;
+
+        .logo {
+          width: 65px;
+          margin-top: 24px;
+        }
+
+        .tabs {
+          font-size: 16px;
+          display: flex;
+          margin-left: 13px;
+          overflow: hidden;
+
+          a {
+            margin-left:6px;
+          }
+
+          .active{
+            font-weight: bold;
+            color: dodgerblue;
+            font-size: 16px;
+            position: relative;
+            &:after{
+              display: table;
+              content: '';
+              width: 100%;
+              background: dodgerblue;
+              height: 3px;
+              position: absolute;
+              bottom: 5px;
+            }
+          }
+        }
+      }
+
+      .right {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        .search {
+          flex: 1;
+          padding-right: 13px;
+
+          .input {
+            border: 1px solid #8888;
+            border-radius: 50px;
+          }
+        }
+      }
+
+    }
+
+    /*.wrap {
+      //width: 100%;
+      height: 64px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      font-size: 16px;
+      line-height: 64px;
+
+      .left {
+        .logo {
+          width: 110px;
+          cursor: pointer; // 悬浮上空为首手
+          vertical-align: middle;
+        }
+
+        .tabs {
+          display: flex;
+
+          -webkit-box-align: center;
+          align-items: center;
+          margin-left: 68px;
+
+          a {
+            //margin-right: 50px;
+          }
+
+          .active {
+            font-weight: bold;
+            color: dodgerblue;
+            border-bottom: 5px solid dodgerblue;
+            display: inline-block;
+            position: relative;
+            top: -4px;
+          }
+        }
+      }
+
+      .right {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        -webkit-box-pack: justify;
+
+        .search {
+          //padding-right: 30px;
+
+          input {
+            border-radius: 50px;
+            border: 1px solid #888888;
+            height: 25px;
+            width: 175px;
+            //-webkit-appearance: none;
+            outline: none;
+            font: inherit;
+          }
+        }
+
+        .other {
+          //padding-right: 50px;
+          display: flex;
+          align-items: center;
+          //-webkit-box-align: center;
+
+          a {
+            //margin-left: 35px;
+          }
+        }
+      }
+    }*/
+  }
+}
+
 </style>

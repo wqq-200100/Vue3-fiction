@@ -10,7 +10,7 @@
     <p class="choice">精选推荐</p>
     <div class="top">
       <a v-for="item in data" href="#">
-        <div class="book" @click="goto(item)">
+        <div class="book" @click="goto(item.title)">
           <img :src="'data:image/;base64,'+ item.baseimg" alt="">
           <p class="name">{{ item.title }}</p>
           <p class="intro">{{ item.intro }}</p>
@@ -24,28 +24,29 @@
 </template>
 
 <script setup>
-import {reactive} from "vue";
+import {onMounted, ref} from "vue";
 import {useRouter} from "vue-router";
 import {RecommendNovel} from "../api/request.js";
-import Nav from '../components/Nav.vue'
 
-const data = reactive([])
+const data = ref([])
 const router = useRouter()
 
 async function bookList() {
   let res = await RecommendNovel()
-  res.forEach(i => {
-    data.push(i)
-  })
+  console.log(res)
+  data.value= res
 }
 
-bookList()
+onMounted(()=>{
+  bookList()
+})
 
-function goto(item) {
+function goto(title) {
+  console.log(title)
   router.push({
     name: 'detail',
     params: {
-      title: item.title,
+      title,
     }
   })
 }

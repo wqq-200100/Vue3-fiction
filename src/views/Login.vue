@@ -3,10 +3,8 @@
     <h1 class="text">免费小说</h1>
     <div class="input">
       <el-form
-          :label-position="labelPosition"
-          :model="formLabelAlign"
-          label-width="100px"
-          style="max-width: 500px">
+          label-position="left"
+          :model="formLabelAlign">
         <el-form-item label="帐号:">
           <el-input v-model="formLabelAlign.name"/>
         </el-form-item>
@@ -28,9 +26,6 @@ import {login, registerRequest} from "../api/user";
 import {useRouter} from "vue-router";
 import {ElMessage} from "element-plus";
 import {getUserLoginData} from "../store";
-
-
-const labelPosition = ref('right')
 const router = useRouter()
 const formLabelAlign = reactive({
   name: '',
@@ -54,15 +49,15 @@ async function onSubmit(subType) {
   } else {
     res = await login(req)
     if (res.msg === "登录成功") {
-      // 登录成功将token和用户名保存到store中
+      // 登录成功将用户id和用户名保存到store中
       loginStore.$patch({
-        token: res.token,
+        user_id: res.user_id,
         stateUsername: formLabelAlign.name
       })
-      window.localStorage.setItem('username',loginStore.stateUsername)
+      window.localStorage.setItem('usernameData', JSON.stringify(loginStore))
       await router.push({
-        name:'home',
-        params:{username:loginStore.stateUsername}
+        name: 'home',
+        params: {username: loginStore.stateUsername}
       })
     }
   }
@@ -71,28 +66,64 @@ async function onSubmit(subType) {
 </script>
 
 <style lang="less" scoped>
-.login {
-  width: 500px;
-  margin-left: 37vw;
-  margin-top: 30vh;
 
-  .text {
-    position: absolute;
-    top: 20vh;
-    left: 49vw;
+@media screen and (min-width: 601px) {
+
+  .login {
+    width: 500px;
+    margin-left: 37vw;
+    margin-top: 30vh;
+
+    .text {
+      position: absolute;
+      top: 20vh;
+      left: 49vw;
+    }
+
+    .input {
+      position: relative;
+
+      .btn {
+        width: 300px;
+        display: flex;
+        margin: 40px 130px;
+        justify-content: space-between;
+
+        .registerBtn, .loginBtn {
+          width: 120px;
+        }
+      }
+    }
   }
+}
 
-  .input {
-    position: relative;
+@media screen and (max-width: 600px) {
+  .login {
+    width: 100vw;
+    margin-top: 5rem;
 
-    .btn {
-      width: 300px;
-      display: flex;
-      margin: 40px 130px;
-      justify-content: space-between;
+    .text {
+      position: relative;
+      top: 40px;
+      text-align: center;
+    }
 
-      .registerBtn, .loginBtn {
-        width: 120px;
+    .input {
+      position: relative;
+      width: 90%;
+      margin: 50% auto;
+
+      .btn {
+        margin: 30px auto;
+        width: 80%;
+        display: flex;
+
+        align-items: center;
+        justify-content: space-around;
+
+        .registerBtn, .loginBtn {
+          width: 5rem;
+        }
       }
     }
   }

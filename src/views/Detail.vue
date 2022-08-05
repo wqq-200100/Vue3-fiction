@@ -40,6 +40,10 @@
                 <span>开始阅读</span>
               </button>
             </a>
+            <a href="#" @click="changeClick">
+              <el-button v-if="!isLike" class="btn-like" round type="danger" @click="addClick('add')">收藏</el-button>
+              <el-button v-else class="btn-like" round type="danger" @click="addClick">取消收藏</el-button>
+            </a>
           </div>
         </div>
       </div>
@@ -83,13 +87,17 @@ import {onMounted, reactive, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
 
 import {GetCapterName, NovelDetails} from "../api/request.js";
+import {getUserLoginData} from "../store";
+import {addLike, deleteLike} from "../api/collect";
 
 const router = useRouter()
 const route = useRoute()
+const userStore = getUserLoginData()
 const date = ref({
   total: []
 })
 const isaction = ref(false)
+const isLike = ref(false)
 const info = reactive({})
 const chapterList = ref([])
 const chapterNum = ref(0)
@@ -98,7 +106,6 @@ const currtenChapter = ref({
   chapterName: '',
   content: ''
 })
-
 
 watch(chapterNum, () => {
   currtenChapter.value = filterChapter() // 监听章节id的变化，拿到当前对应id的章节
@@ -117,29 +124,54 @@ function filterChapter() {
   return c || {} // 章节id和章节数相同则返回，否则返回一个空对象
 }
 
-
 async function getChapterNameDate(req) {
   chapterList.value = await GetCapterName(req) // 根据小说名获取小说章节
-  chapterNum.value = chapterList.value[0].cid // 获取第一章内容的id
+  chapterNum.value = (chapterList.value[0] || []).cid // 获取第一章内容的id
   date.value = await NovelDetails(req)  // 根据小说名获取小说详情
+  window.localStorage.setItem('detailDate', JSON.stringify(date.value))
 }
 
 // 接受home的路由传参
 onMounted(() => {
-  const routeParams = route.params
-  info.title = routeParams.title
-  getChapterNameDate(routeParams.title)
+  let title
+  if (route.params.title) {
+    const routeParams = route.params
+    title = routeParams.title
+  } else {
+    title = JSON.parse(window.localStorage.getItem('detailDate')).title || ''
+  }
+  info.title = title
+  getChapterNameDate(title)
+  const f = userStore.likes.filter(i => i.title === info.title)
+  if (f.length > 0) isLike.value = true
 })
 
+async function addClick(type) {
+  const user_id = userStore.user_id || JSON.parse(window.localStorage.getItem('usernameData')).user_id
+  const req = {title: info.title, user_id}
+  let res
+  if (type === 'add') {
+    res = await addLike(req)
+  } else {
+    res = await deleteLike(req)
+  }
+  console.log(res)
+}
 
-// 切换导航栏
+// 切换书籍简介和详情
 function handleClick() {
   isaction.value = !isaction.value
 }
 
+// 切换收藏和取消收藏
+function changeClick() {
+  isLike.value = !isLike.value;
+  userStore.getLikes()
+}
+
 function goHome() {
   router.push({
-    path: './Home'
+    path: '/home'
   })
 }
 </script>
@@ -248,6 +280,10 @@ function goHome() {
             margin-left: 20px;
             background: #0bafff;
             color: #fff;
+          }
+
+          .btn-like {
+            margin-left: 20px;
           }
         }
       }
